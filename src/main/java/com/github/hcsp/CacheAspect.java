@@ -10,6 +10,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import java.time.Duration;
 import java.time.Instant;
 
 @Aspect
@@ -33,7 +34,8 @@ public class CacheAspect {
         CacheValue cacheValue = redisTemplate.opsForValue().get(cacheKey);
         int cacheDuration = cacheAnnotation.value();
         Instant currentInstant = Instant.now();
-        if (cacheValue != null && currentInstant.getNano() - cacheValue.getCacheTime().getNano() < cacheDuration * 1000) {
+
+        if (cacheValue != null && Duration.between(cacheValue.getCacheTime(), Instant.now()).getSeconds() < cacheDuration) {
             System.out.println("cache");
             return cacheValue.getValue();
         } else {
